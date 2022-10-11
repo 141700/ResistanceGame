@@ -1,0 +1,113 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Игра "Сопротивление"</title>
+    <style type="text/css">
+
+.flex-container {
+  display: flex;
+  justify-content: left;
+<!--    height: 2px;-->
+<!--  align-items: baseline;-->
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+td {
+<!--  vertical-align: top;-->
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+
+th {
+  font-weight: bold;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+
+#all {
+  background-color: silver;
+  font-family: Century Gothic;
+  font-size: 17px;
+}
+
+#message {
+  font-weight: bold;
+  font-size: 20px;
+}
+
+#input {
+  font-size: 25px;
+}
+
+#rules {
+  font-size: 15px;
+}
+
+#button {
+  font-weight: bold;
+  font-size: 28px;
+}
+
+
+
+
+
+    </style>
+</head>
+<body id="all"
+      th:with="game=${gameplay.getGame()}, player=${gameplay.getPlayer()}, stage=${gameplay.getGame().getStage().toString()}">
+<!--<div th:text="'Leader = ' + ${game.getLeader()}"></div>-->
+<!--<div th:text="'Stage = ' + ${stage}"></div>-->
+<!--<div th:text="'Current Mission = ' + ${game.getCurrentMission()}"></div>-->
+<!--<div th:text="'Current Vote = ' + ${game.getCurrentVote()}"></div>-->
+<form action="#" th:action="@{/session}" th:object="${mainForm}" method="post">
+    <input type="hidden" th:value="${player.getUuid()}" id="uuid" name="uuid"/>
+    <table style=" width: 1200px;" border="0">
+        <tr>
+            <td width="60%">
+                <div id="message" th:if="${gameplay.getHeaderMessage().length > 0}"
+                     th:utext="${#strings.replace(#strings.escapeXml(gameplay.getHeaderMessage()),'&#10;', '&lt;br /&gt;')}">
+                    <br>
+                    <br>
+                </div>
+            </td>
+            <td rowspan="2">
+                <div th:if="${stage != 'START'}" th:insert="playerstable :: match-table"></div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div th:switch="${stage}">
+                    <div th:case="'START'" th:insert="playerstable :: start"></div>
+                    <div th:case="'TEAM_RESULT'" th:insert="playerstable :: team-result"></div>
+                    <div th:case="'VICTORY'" th:insert="playerstable :: finish"></div>
+                    <div th:case="'DEFEAT'" th:insert="playerstable :: finish"></div>
+                    <div th:case="*" th:insert="playerstable :: team"></div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <br>
+    <div th:if="${gameplay.getContext().length > 0}" th:insert="middle :: ${gameplay.getContext()}"></div>
+    <br>
+    <button id="button" type="submit">Вперед!</button>
+</form>
+<br>
+<p id="rules">
+    <br>
+    Не закрывайте вкладку во время игры - восстановить сессию невозможно!
+    <br>
+    <br>
+    <a target="_blank"
+       href="https://www.mosigra.ru/image/data/mosigra.product.other/549/932/soprotivlenie_2izd.pdf">Правила</a>
+    <br><span th:text="'Game ID ' + ${player.getInGame()}"></span></p>
+
+</body>
+</html>

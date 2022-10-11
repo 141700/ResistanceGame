@@ -1,0 +1,106 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:background-color="http://www.w3.org/1999/xhtml"
+      xmlns:font-size="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Игра "Сопротивление"</title>
+    <style type="text/css">
+
+th {
+  font-weight: bold;
+}
+
+#all {
+  background-color: silver;
+  font-family: Century Gothic;
+  font-size: 17px;
+}
+
+#welcome {
+  font-weight: bold;
+  font-size: 28px;
+}
+
+#input {
+  font-size: 22px;
+}
+
+#rules {
+  font-size: 20px;
+}
+
+#invite {
+  font-size: 20px;
+}
+
+#button {
+  font-weight: bold;
+  font-size: 28px;
+}
+
+    </style>
+</head>
+<body id="all">
+<p id="welcome">
+    Добро пожаловать в игру "Сопротивление"!
+    <br></p>
+
+<form action="#" th:action="@{/}" th:object="${mainForm}" method="post">
+    <table>
+        <tr>
+            <td>Чтобы поиграть введите свое имя:</td>
+        </tr>
+        <tr>
+            <td><input id="input" type="text" th:field="*{name}"/></td>
+<!--            <td th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Input Error</td>-->
+            <td th:if="${nameerror}"><i>Имя игрока должно иметь от 2 до 30 символов!</i></td>
+        </tr>
+    </table>
+    <br>
+    <br>
+    <p id="invite">
+        Присоединитесь к одной из доступных игр или создайте свою:
+        <br>
+    </p>
+    <div class="form-group">
+        <table style="width: 500px;">
+            <tr th:if="${!opened.isEmpty()}">
+                <th></th>
+                <th>ID игры</th>
+                <th>Создатель</th>
+                <th>Участников</th>
+            </tr>
+            <tr th:if="${!opened.isEmpty()}" th:each="mapEntry : ${opened}">
+                <td width="5%">
+                    <div class="custom-control custom-radio custom-control-inline">
+                        <input type="radio" th:field="*{joinedGameId}" th:value="${mapEntry.key}"
+                               class="custom-control-input">
+                    </div>
+                </td>
+                <td width="15%" th:text="${mapEntry.key}"></td>
+                <td style="text-align:center" th:text="${mapEntry.value.getCreatedBy().getName()}"></td>
+                <td width="20%" style="text-align:center" th:text="${mapEntry.value.getTable().size()}"></td>
+            <tr>
+                <td><input type="radio" th:field="*{joinedGameId}" th:value="${0}"
+                           class="custom-control-input"></td>
+                <td colspan="3"><label class="custom-control-label" th:text="'Создать новую игру!'"></label></td>
+            </tr>
+        </table>
+    </div>
+    <br>
+    <br>
+    <table>
+        <tr>
+            <td>
+                <button id="button" type="submit">Вперед!</button>
+            </td>
+        </tr>
+    </table>
+</form>
+<p id="rules">
+    <br>
+    <br>
+    <a target="_blank"
+       href="https://www.mosigra.ru/image/data/mosigra.product.other/549/932/soprotivlenie_2izd.pdf">Правила</a></p>
+</body>
+</html>

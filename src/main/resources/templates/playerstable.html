@@ -1,0 +1,110 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="start">
+    <table border="0">
+        <tr>
+            <th>No.</th>
+            <th>Игрок</th>
+        </tr>
+        <tr th:each="listEntry : ${game.getTable()}">
+            <td th:each="p: ${listEntry}" th:text="${listEntryStat.count}"></td>
+            <td th:each="p: ${listEntry}" th:text="${p.getName()}"></td>
+    </table>
+</div>
+
+<div th:fragment="team">
+    <br>
+    <table border="0">
+        <tr>
+            <th></th>
+            <th>No.</th>
+            <th>Игрок</th>
+<!--            <th>readyForNextStage</th>-->
+<!--            <th>Role</th>-->
+            <th></th>
+        </tr>
+        <tr th:each="listEntry : ${game.getTable()}">
+            <td th:if="${game.isLeader(player) && stage == 'TEAM'}"><input type="checkbox" name="team"
+                                                                           th:each="p: ${listEntry}"
+                                                                           th:value="${p.getSeat()}"/></td>
+            <td th:if="${!game.isLeader(player) || stage != 'TEAM'}"></td>
+            <td th:each="p: ${listEntry}" th:style="${p.isInTeam} ? 'background: yellow' : ''"
+                th:text="${listEntryStat.count}"></td>
+            <td th:each="p: ${listEntry}" th:style="${p.isInTeam} ? 'background: yellow' : ''"
+                th:text="${p.getName()}"></td>
+<!--            <td th:each="p: ${listEntry}" th:style="${p.isInTeam} ? 'background: yellow' : ''"-->
+<!--                th:text="${p.isReadyForNextStage()}"></td>-->
+<!--            <td th:each="p: ${listEntry}" th:style="${p.isInTeam} ? 'background: yellow' : ''"-->
+<!--                th:text="${p.getRole()}"></td>-->
+            <td th:each="p: ${listEntry}" th:style="${p.isInTeam} ? 'background: yellow' : ''"
+                th:text="${listEntryStat.count == game.getLeader() + 1} ? 'Лидер' : ' '">
+                </td>
+        </tr>
+    </table>
+</div>
+
+<div th:fragment="team-result">
+    <table border="0">
+        <tr>
+            <th>No.</th>
+            <th>Игрок</th>
+            <th>Голос</th>
+            <th></th>
+        </tr>
+        <tr th:each="listEntry : ${game.getTable()}">
+            <td th:each="p: ${listEntry}" th:style="${p.isInTeam} ? 'background: yellow' : ''"
+                th:text="${listEntryStat.count}"></td>
+            <td th:each="p: ${listEntry}" th:style="${p.isInTeam} ? 'background: yellow' : ''"
+                th:text="${p.getName()}"></td>
+            <td th:each="p: ${listEntry}" th:style="${p.isInTeam} ? 'background: yellow' : ''"
+                th:text="${p.getTeamVote().get(game.getCurrentVote())} ? 'За!' : 'Против!'"></td>
+            <td th:each="p: ${listEntry}" th:style="${p.isInTeam} ? 'background: yellow' : ''"
+                th:text="${listEntryStat.count == game.getLeader() + 1} ? 'Лидер' : ' '">
+            </td>
+    </table>
+</div>
+
+
+<div th:fragment="finish">
+    <table border="0">
+        <tr>
+            <th>No.</th>
+            <th>Игрок</th>
+            <th>Роль</th>
+        </tr>
+        <tr th:each="listEntry : ${game.getTable()}">
+            <td th:each="p: ${listEntry}" th:text="${listEntryStat.count}"></td>
+            <td th:each="p: ${listEntry}" th:text="${p.getName()}"></td>
+            <td th:each="p: ${listEntry}" th:text="${p.getRole()}"></td>
+    </table>
+</div>
+
+<div th:fragment="match-table">
+    <table style=" text-align: center; width : 350px;" border="1">
+        <tr>
+            <th colspan="5">Миссии</th>
+        </tr>
+        <tr style=" font-weight: bold;">
+            <td th:each="i : ${#numbers.sequence(1, 5, 1)}" th:text="${i}"></td>
+        </tr>
+        <tr>
+            <option th:each="i : ${#numbers.sequence(1, 5, 1)}">
+                <td th:if="${!game.getMissionResults().containsKey(i)}"
+                    th:text="${game.getConfiguration().get(i) + ' уч.'}"></td>
+                <td th:if="${game.getMissionResults().containsKey(i)}"
+                    th:text="${game.getMissionResults().get(i)} ? 'УСПЕХ' : 'ПРОВАЛ'"></td>
+            </option>
+        </tr>
+        <tr>
+            <th colspan="5">Голосование</th>
+        </tr>
+        <tr style=" font-weight: bold;">
+            <td th:each="i : ${#numbers.sequence(1, 5, 1)}" th:text="${game.getCurrentVote() >= i} ? ${i} : ' '"></td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>
