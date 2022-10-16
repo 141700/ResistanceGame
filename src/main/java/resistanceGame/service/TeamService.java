@@ -26,7 +26,6 @@ public class TeamService {
         team.stream()
                 .mapToInt(Integer::parseInt)
                 .forEach(i -> table.get(i).setInTeam(true));
-        game.setStage(Game.Stage.TEAM_VOTE);
     }
 
     public int getRequestedTeamValue(Game game) {

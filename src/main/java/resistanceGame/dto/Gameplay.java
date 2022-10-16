@@ -17,6 +17,6 @@ public class Gameplay {
 
     private String headerMessage;
 
-    private String context;
+    private boolean context;
 
 }

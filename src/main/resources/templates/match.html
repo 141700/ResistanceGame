@@ -54,18 +54,10 @@ th {
   font-size: 28px;
 }
 
-
-
-
-
     </style>
 </head>
 <body id="all"
-      th:with="game=${gameplay.getGame()}, player=${gameplay.getPlayer()}, stage=${gameplay.getGame().getStage().toString()}">
-<!--<div th:text="'Leader = ' + ${game.getLeader()}"></div>-->
-<!--<div th:text="'Stage = ' + ${stage}"></div>-->
-<!--<div th:text="'Current Mission = ' + ${game.getCurrentMission()}"></div>-->
-<!--<div th:text="'Current Vote = ' + ${game.getCurrentVote()}"></div>-->
+      th:with="game=${gameplay.getGame()}, player=${gameplay.getPlayer()}, stage=${gameplay.getGame().getStage().toString()}, context=${gameplay.isContext()}">
 <form action="#" th:action="@{/session}" th:object="${mainForm}" method="post">
     <input type="hidden" th:value="${player.getUuid()}" id="uuid" name="uuid"/>
     <table style=" width: 1200px;" border="0">
@@ -86,16 +78,14 @@ th {
                 <div th:switch="${stage}">
                     <div th:case="'START'" th:insert="playerstable :: start"></div>
                     <div th:case="'TEAM_RESULT'" th:insert="playerstable :: team-result"></div>
-                    <div th:case="'VICTORY'" th:insert="playerstable :: finish"></div>
-                    <div th:case="'DEFEAT'" th:insert="playerstable :: finish"></div>
+                    <div th:case="'FINISH'" th:insert="playerstable :: finish"></div>
                     <div th:case="*" th:insert="playerstable :: team"></div>
                 </div>
             </td>
         </tr>
     </table>
-
     <br>
-    <div th:if="${gameplay.getContext().length > 0}" th:insert="middle :: ${gameplay.getContext()}"></div>
+    <div th:insert="middle :: ${stage}"></div>
     <br>
     <button id="button" type="submit">Вперед!</button>
 </form>

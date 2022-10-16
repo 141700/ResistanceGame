@@ -3,7 +3,7 @@ package resistanceGame.service;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import resistanceGame.configuration.GameplayConfigurtation;
+import resistanceGame.configuration.GameplayConfiguration;
 import resistanceGame.exception.*;
 import resistanceGame.model.Player;
 import resistanceGame.model.Game;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class GameService {
 
     @Autowired
-    GameplayConfigurtation configuration;
+    GameplayConfiguration configuration;
 
     @Autowired
     MatchService matchService;
@@ -75,19 +75,19 @@ public class GameService {
     }
 
     public Game getGame(int gameId) {
-        if (this.allGames.containsKey(gameId)) {
-            return this.allGames.get(gameId);
-        } else {
+        Game game = this.allGames.get(gameId);
+        if (game == null) {
             throw new GameDoesNotExistException(gameId);
         }
+        return game;
     }
 
     public Player getPlayer(UUID uuid) {
-        if (this.allPlayers.containsKey(uuid)) {
-            return this.allPlayers.get(uuid);
-        } else {
+        Player player = this.allPlayers.get(uuid);
+        if (player == null) {
             throw new PlayerNotFoundException(uuid);
         }
+        return player;
     }
 
     public Map<Integer, Game> getOpenGamesList() {

@@ -46,8 +46,9 @@ public class MatchService {
             case RESISTANCE:
                 return "Поздравляем!\n" +
                         "Вы член Сопротивления! Будьте бдительны!";
+            default:
+                throw new IllegalStateException("Player's role is not valid " + role);
         }
-        return null;
     }
 
     private String getSpiesList(Game game) {

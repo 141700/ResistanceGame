@@ -12,8 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import resistanceGame.service.GameplayService;
 
-import javax.validation.Valid;
-
 @RequiredArgsConstructor
 @Controller
 @RequestMapping

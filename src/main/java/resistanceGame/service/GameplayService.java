@@ -7,6 +7,7 @@ import resistanceGame.dto.Gameplay;
 import resistanceGame.form.MainForm;
 import resistanceGame.model.Game;
 import resistanceGame.model.Player;
+import resistanceGame.model.Stage;
 
 import java.util.List;
 
@@ -26,14 +27,15 @@ public class GameplayService {
     @Autowired
     MissionService missionService;
 
+    @Autowired
+    StageService stageService;
+
     public Gameplay analyzeUserRequest(MainForm form) {
         Player player = gameService.getPlayer(form.getUuid());
         Game game = gameService.getGame(player.getInGame());
         switch (game.getStage()) {
             case START:
                 return handleStartStage(game, player, form);
-//            case INTRO:
-//                return handleIntroStage(game, player, form);
             case TEAM:
                 return handleTeamStage(game, player, form);
             case TEAM_VOTE:
@@ -44,31 +46,30 @@ public class GameplayService {
                 return handleMissionStage(game, player, form);
             case MISSION_RESULT:
                 return handleMissionResultStage(game, player);
-            case VICTORY:
-            case DEFEAT:
+            case FINISH:
                 return handleFinishStage(game, player);
+            default:
+                throw new IllegalStateException("Game stage is not valid " + game.getStage());
         }
-        return null;
     }
 
     private Gameplay handleFinishStage(Game game, Player player) {
-        return new Gameplay(game, player, "ИГРА ОКОНЧЕНА!", "finish");
+        return new Gameplay(game, player, "ИГРА ОКОНЧЕНА!", matchService.isVictory(game));
     }
 
     private Gameplay handleMissionResultStage(Game game, Player player) {
         String message = "";
-        String context = "mission-result";
+        boolean context = false;
         if (matchService.isAllPlayersReadyForNextStage(game)) {
             if (!matchService.isGameOver(game)) {
                 missionService.riseCurrentMission(game);
                 matchService.resetPlayersReadyForNextStage(game);
-                game.setStage(Game.Stage.TEAM);
+                game.setStage(Stage.TEAM);
                 teamService.resetTeam(game, true);
-                context = "team";
             } else {
-                game.setStage(matchService.isVictory(game) ? Game.Stage.VICTORY : Game.Stage.DEFEAT);
+                stageService.switchToNextStage(game);
+                context = matchService.isVictory(game);
                 message = "ИГРА ОКОНЧЕНА!";
-                context = "finish";
             }
         } else {
             player.setReadyForNextStage(true);
@@ -77,44 +78,40 @@ public class GameplayService {
     }
 
     private Gameplay handleMissionStage(Game game, Player player, MainForm form) {
-        String context = "mission";
+        boolean context = false;
         int currentMission = game.getCurrentMission();
         if (!player.getMissionVote().containsKey(currentMission)) {
             if (form.getVote() != null) {
                 missionService.voteForMission(player, currentMission, form.getVote());
-                context = "voted";
+                context = true;
                 if (missionService.isMissionVoteComplete(game)) {
-                    game.setStage(Game.Stage.MISSION_RESULT);
+                    stageService.switchToNextStage(game);
                     missionService.implementMissionVotes(game);
                     game.getMissionResults().put(currentMission, missionService.isMissionSucceed(game));
-                    context = "mission-result";
                     player.setReadyForNextStage(true);
                 }
             }
         } else {
-            context = "voted";
+            context = true;
         }
         return new Gameplay(game, player, "", context);
     }
 
     private Gameplay handleTeamResultStage(Game game, Player player) {
-        String context;
+        boolean context = false;
         if (matchService.isAllPlayersReadyForNextStage(game)) {
             matchService.resetPlayersReadyForNextStage(game);
             if (teamService.getResultOfTeamVote(game)) {
-                game.setStage(Game.Stage.MISSION);
+                stageService.switchToNextStage(game);
                 teamService.resetTeamVotes(game);
-                context = "mission";
             } else if (game.getCurrentVote() < 5) {
-                game.setStage(Game.Stage.TEAM);
+                game.setStage(Stage.TEAM);
                 teamService.resetTeam(game, false);
-                context = "team";
             } else {
-                game.setStage(Game.Stage.DEFEAT);
-                context = "finish";
+                game.setStage(Stage.FINISH);
             }
         } else {
-            context = teamService.getResultOfTeamVote(game) ? "team-yes" : "team-no";
+            context = teamService.getResultOfTeamVote(game);
             player.setReadyForNextStage(true);
         }
         return new Gameplay(game, player, "", context);
@@ -125,17 +122,17 @@ public class GameplayService {
         if (game.getCurrentMission() == 1 && game.getCurrentVote() == 1) {
             message = matchService.generateIntroToMatch(game, player);
         }
-        String context = "voted";
+        boolean context = true;
         if (!player.getTeamVote().containsKey(game.getCurrentVote())) {
             if (form.getVote() != null) {
                 teamService.voteForTeam(player, form.getVote());
                 if (teamService.isTeamVoteComplete(game)) {
-                    game.setStage(Game.Stage.TEAM_RESULT);
-                    context = teamService.getResultOfTeamVote(game) ? "team-yes" : "team-no";
+                    stageService.switchToNextStage(game);
+                    context = teamService.getResultOfTeamVote(game);
                     player.setReadyForNextStage(true);
                 }
             } else {
-                context = "team-vote";
+                context = false;
             }
         }
         return new Gameplay(game, player, message, context);
@@ -143,41 +140,25 @@ public class GameplayService {
 
     private Gameplay handleTeamStage(Game game, Player player, MainForm form) {
         String message = "";
-        String context = "team";
         if (game.getCurrentMission() == 1 && game.getCurrentVote() == 1) {
             message = matchService.generateIntroToMatch(game, player);
         }
         List<String> team = form.getTeam();
         if (team != null && teamService.isTeamValid(game, team) && game.isLeader(player)) {
             teamService.createTeam(player.getInGame(), form.getTeam());
-            context = "team-vote";
+            stageService.switchToNextStage(game);
         }
-        return new Gameplay(game, player, message, context);
+        return new Gameplay(game, player, message, false);
     }
-
-//    private Gameplay handleIntroStage(Game game, Player player, MainForm form) {
-//        String message = matchService.generateIntroToMatch(game, player);
-//        String context = "intro";
-//        if (matchService.isAllPlayersReadyForNextStage(game)) {
-//            matchService.resetPlayersReadyForNextStage(game);
-//            game.setStage(Game.Stage.TEAM);
-//            context = "team";
-//        } else {
-//            player.setReadyForNextStage(true);
-//        }
-//        return new Gameplay(game, player, message, context);
-//    }
 
     private Gameplay handleStartStage(Game game, Player player, MainForm form) {
         String message;
-        String context = "start";
         if (player.getSeat() == 0) {
             if (form.isStart()) {
                 if (game.getSize() > 4) {
                     gameService.startGame(player.getInGame());
-                    game.setStage(Game.Stage.TEAM);
+                    stageService.switchToNextStage(game);
                     message = matchService.generateIntroToMatch(game, player);
-                    context = "team";
                 } else {
                     message = "Для начала игры требуется не менее 5 игроков!";
                 }
@@ -188,6 +169,6 @@ public class GameplayService {
             message = "Вы участник игры ID " + player.getInGame() + ", которую создал " + game.getCreatedBy().getName() + "."
                     + "\nВ игре пока " + game.getSize() + " уч. и она открыта для присоединения.";
         }
-        return new Gameplay(game, player, message, context);
+        return new Gameplay(game, player, message, false);
     }
 }

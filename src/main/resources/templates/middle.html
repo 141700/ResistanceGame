@@ -2,60 +2,43 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <div id="input">
-    <div th:fragment="start">
-        <div th:if="${gameplay.getPlayer().getSeat() == 0}">
-            <table>
-                <tr>
-                    <td>Для старта игры отметьте галочку!<br>
-                        Минимум 5, максимум 10 игроков. <br>
-                    </td>
-                    <td>
-                        <input type="checkbox" th:field="*{start}"/>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div th:if="${gameplay.getPlayer().getSeat() != 0}">
-            <table>
-                <tr>
-                    <td>Игру начинает создатель игровой сессии.<br>
-                        Минимум 5, максимум 10 игроков. <br>
-                        Ждем!
-                    </td>
-                </tr>
-            </table>
-        </div>
+    <div th:fragment="START">
+        <table th:if="${gameplay.getPlayer().getSeat() == 0}">
+            <tr>
+                <td>Для старта игры отметьте галочку!<br>
+                    Минимум 5, максимум 10 игроков. <br>
+                </td>
+                <td>
+                    <input type="checkbox" th:field="*{start}"/>
+                </td>
+            </tr>
+        </table>
+        <table th:if="${gameplay.getPlayer().getSeat() != 0}">
+            <tr>
+                <td>Игру начинает создатель игровой сессии.<br>
+                    Минимум 5, максимум 10 игроков. <br>
+                    Ждем!
+                </td>
+            </tr>
+        </table>
     </div>
 
-    <div th:fragment="intro">
-            <table>
-                <tr>
-                    <td>Я осознал свою роль в этой игре и готов продолжать.
-                    </td>
-                </tr>
-            </table>
+    <div th:fragment="TEAM">
+        <table th:if="${game.isLeader(player)}">
+            <tr th:text="'Вы текущий Лидер и должны сформировать команду из ' + ${game.getConfiguration().get(game.getCurrentMission())} + ' игроков!'"></tr>
+        </table>
+        <table th:if="${!game.isLeader(player)}">
+            <tr>
+                <td>Лидер должен сформировать команду.<br>
+                    Ждем!
+                </td>
+            </tr>
+        </table>
     </div>
 
-    <div th:fragment="team">
-        <div th:if="${game.isLeader(player)}">
-            <table>
-                <tr th:text="'Вы текущий Лидер и должны сформировать команду из ' + ${game.getConfiguration().get(game.getCurrentMission())} + ' игроков!'"></tr>
-            </table>
-        </div>
-        <div th:if="${!game.isLeader(player)}">
-            <table>
-                <tr>
-                    <td>Лидер должен сформировать команду.<br>
-                        Ждем!
-                    </td>
-                </tr>
-            </table>
-        </div>
-    </div>
-
-    <div th:fragment="team-vote">
-        <table>
-            <tr th:text="'Голосование за сформированную комманду:'">
+    <div th:fragment="TEAM_VOTE">
+        <table th:if="${!context}">
+            <tr th:text="'Голосование за сформированную команду:'">
             <tr>
                 <td>
                     <input type="radio" name="vote" th:value="${TRUE}">
@@ -67,37 +50,32 @@
                 </td>
             </tr>
         </table>
-    </div>
-
-    <div th:fragment="voted">
-        <table>
+        <table th:if="${context}">
             <tr>
                 <td>Ваш голос принят!</td>
             </tr>
         </table>
     </div>
 
-    <div th:fragment="team-yes">
-        <table border="0">
+    <div th:fragment="TEAM_RESULT">
+        <table th:if="${context}" border="0">
             <tr>
-                <td>Команда сформирована и ее участники отправляются на миссию!</td>
+                <td>Результат голосования: команда сформирована, ее участники отправляются на миссию!</td>
             </tr>
         </table>
-    </div>
-
-    <div th:fragment="team-no">
-        <table border="0">
+        <table th:if="${!context}" border="0">
             <tr>
-                <td>Команда не сформирована!<br>
-                    <div th:if="${game.getCurrentVote() < 5}" th:text="'Теперь формировать команду будет другой Лидер (следующий игрок).'"></div>
+                <td>Результат голосования: команда не сформирована!<br>
+                    <div th:if="${game.getCurrentVote() < 5}"
+                         th:text="'Теперь формировать команду будет другой Лидер (следующий игрок).'"></div>
                     <br></td>
             </tr>
         </table>
     </div>
 
-    <div th:fragment="mission">
+    <div th:fragment="MISSION">
         <div th:if="${player.isInTeam}">
-            <table>
+            <table th:if="${!context}">
                 <tr th:text="'Голосование за миссию:'">
                 <tr>
                     <td><input type="radio" name="vote" th:value="${TRUE}">
@@ -108,19 +86,22 @@
                     </td>
                 </tr>
             </table>
-        </div>
-        <div th:if="${!player.isInTeam}">
-            <table>
+            <table th:if="${context}">
                 <tr>
-                    <td>Участики команды голосуют за миссию.<br>
-                        Ждем!
-                    </td>
+                    <td>Ваш голос принят!</td>
                 </tr>
             </table>
         </div>
+        <table th:if="${!player.isInTeam}">
+            <tr>
+                <td>Участики команды голосуют за миссию.<br>
+                    Ждем!
+                </td>
+            </tr>
+        </table>
     </div>
 
-    <div th:fragment="mission-result">
+    <div th:fragment="MISSION_RESULT">
         <table>
             <tr th:if="${game.getMissionResults().get(game.getCurrentMission())}" th:text="'УСПЕХ МИССИИ!'">
             <tr th:if="${!game.getMissionResults().get(game.getCurrentMission())}" th:text="'ПРОВАЛ МИССИИ!'">
@@ -131,10 +112,10 @@
         </table>
     </div>
 
-    <div th:fragment="finish">
+    <div th:fragment="FINISH">
         <table>
-            <tr th:if="${stage == 'VICTORY'}" th:text="'ПОБЕДА СОПРОТИВЛЕНИЯ!'">
-            <tr th:if="${stage == 'DEFEAT'}" th:text="'ПОБЕДА ШПИОНОВ!'">
+            <tr th:if="${context}" th:text="'ПОБЕДА СОПРОТИВЛЕНИЯ!'">
+            <tr th:if="${!context}" th:text="'ПОБЕДА ШПИОНОВ!'">
         </table>
     </div>
 </div>

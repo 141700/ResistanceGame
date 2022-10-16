@@ -28,8 +28,6 @@ public class Game {
 
     private int currentVote;
 
-    public enum Stage {START, INTRO, TEAM, TEAM_VOTE, TEAM_RESULT, MISSION, MISSION_RESULT, VICTORY, DEFEAT}
-
     public Game() {
         this.table = new ArrayList<>();
         this.missions = new HashMap<>();
