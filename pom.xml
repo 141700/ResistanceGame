@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>Resistance-Game-Playroom</artifactId>
+    <artifactId>Resistance-table-game</artifactId>
     <version>1.3</version>
 
     <properties>
