@@ -1,1 +1,1 @@
-web: java -jar target/Resistance-table-game-1.3.jar
+web: java $JAVA_OPTS -jar target/Resistance-table-game-1.3.jar --port $PORT target/*.war
