@@ -48,4 +48,7 @@ gameplay:
       - 4
       - 5
       - 5
-  gameIdRank : 100_000
+  gameIdRank: 100_000
+
+server:
+  port: ${PORT:8080}
