@@ -1,7 +1,5 @@
 package resistanceGame.service;
 
-import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import resistanceGame.model.Game;
 import resistanceGame.model.Player;
@@ -9,7 +7,6 @@ import resistanceGame.model.Player;
 import java.util.Map;
 
 @Component
-@Log4j2
 public class MissionService {
 
     public int getSucceededMissions(Game game) {

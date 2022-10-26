@@ -9,9 +9,10 @@ import java.util.HashMap;
 @Setter
 public class Game {
 
+    private int id;
+
     private ArrayList<Player> table;
 
-//    private final User createdBy;
     private Player createdBy;
 
     private Stage stage;
@@ -28,7 +29,9 @@ public class Game {
 
     private int currentVote;
 
-    public Game() {
+    public Game(int gameId, Player creator) {
+        this.id = gameId;
+        this.createdBy = creator;
         this.table = new ArrayList<>();
         this.missions = new HashMap<>();
         this.missionResults = new HashMap<>();
@@ -37,15 +40,6 @@ public class Game {
         this.currentVote = 1;
         this.stage = Stage.START;
     }
-
-//    public Game(Player player) {
-//        this.table = new ArrayList<>();
-//        this.table.add(player);
-//        this.createdBy = player;
-//        this.leader = 0;
-//        this.currentMission = 0;
-//        this.currentVote = 1;
-//    }
 
     public int getSize() {
         return this.table.size();

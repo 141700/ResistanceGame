@@ -1,7 +1,6 @@
 package resistanceGame.service;
 
-import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import resistanceGame.configuration.GameplayConfiguration;
 import resistanceGame.exception.*;
@@ -11,67 +10,73 @@ import resistanceGame.model.Game;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 
 @Component
-@Log4j2
+@RequiredArgsConstructor
 public class GameService {
 
-    @Autowired
-    GameplayConfiguration configuration;
+    private final GameplayConfiguration configuration;
 
-    @Autowired
-    MatchService matchService;
+    private final MissionService missionService;
 
-    private final ConcurrentHashMap<Integer, Game> allGames;
-    private final ConcurrentHashMap<UUID, Player> allPlayers;
+    private final ConcurrentHashMap<Integer, Game> allGames = new ConcurrentHashMap<>();
 
-    public GameService() {
-        this.allGames = new ConcurrentHashMap<>();
-        this.allPlayers = new ConcurrentHashMap<>();
-    }
 
-    public int createGame() {
-        int gameId = getRandomValue(100000);
-        this.allGames.put(gameId, new Game());
-        return gameId;
-    }
-
-    public UUID createAndAddPlayerToGame(int gameId, String name) {
-        Game game = getGame(gameId);
-        if (game.getCurrentMission() == 0) {
-            ArrayList<Player> table = game.getTable();
-            Player player = new Player(name);
-            int size = game.getSize();
-            if (!table.contains(player)) {
-                if (size < 10) {
-                    table.add(player);
-                    if (size == 0) game.setCreatedBy(player);
-                    player.setSeat(size);
-                    player.setInGame(gameId);
-                    UUID uuid = player.getUuid();
-                    this.allPlayers.put(uuid, player);
-                    return uuid;
-                }
-                return null;
-            } else {
-                throw new PlayerNameIsNotUnique(name); // fixme после переходна авторизацию user теряет смысл
-            }
-        } else {
-            throw new GameIsClosedException(gameId);
+    public Game createGame(Player creator) {
+        int gameId;
+        do {
+            gameId = generateGameId();
         }
+        while (this.allGames.containsKey(gameId));
+        Game game = new Game(gameId, creator);
+        this.allGames.put(gameId, game);
+        return game;
     }
 
-    public void startGame(int gameId) {
-        Game game = getGame(gameId);
+    private int generateGameId() {
+        return Utils.getRandomValue(configuration.getGameIdRank());
+    }
+
+    public int addPlayer(Game game, Player player) {
+        Optional.of(game.getCurrentMission())
+                .filter(entry -> entry == 0)
+                .orElseThrow(() -> new GameIsClosedException(game.getId()));
         int size = game.getSize();
-        if (size > 4) {
-            game.setConfiguration(configuration.getConfiguration(size));
-            matchService.setRandomRoles(game);
-            game.setLeader(getRandomValue(size));
-            game.setCurrentMission(1);
-        } else {
-            throw new NotEnoughPlayersException(gameId);
+        if (size >= GameplayConfiguration.MAX_PLAYERS_COUNT) {
+            throw new IllegalStateException("The game is overloaded.");
         }
+        if (game.getTable().contains(player)) {
+            throw new PlayerNameIsNotUnique(player.getName());
+        }
+        game.getTable().add(player);
+        return size;
+    }
+
+    public void startGame(Game game) {
+        int size = game.getSize();
+        game.setConfiguration(configuration.getConfiguration(size));
+        setRandomRoles(game);
+        game.setLeader(Utils.getRandomValue(size));
+        missionService.riseCurrentMission(game);
+    }
+
+    public String getSpiesList(Game game) {
+        StringBuilder list = new StringBuilder();
+        game.getTable().stream()
+                .filter(p -> p.getRole() == Player.Role.SPY)
+                .forEach(p -> list.append(p.getName()).append("\n"));
+        return list.toString();
+    }
+
+    public void setRandomRoles(Game game) {
+        ArrayList<Player> table = game.getTable();
+        Collections.shuffle(table);
+        int spies = game.getConfiguration().get(0);
+        table.stream().limit(spies).forEach(p -> p.setRole(Player.Role.SPY));
+        Collections.shuffle(table);
+        IntStream.range(0, table.size()).forEach(i -> table.get(i).setSeat(i));
     }
 
     public Game getGame(int gameId) {
@@ -82,21 +87,20 @@ public class GameService {
         return game;
     }
 
-    public Player getPlayer(UUID uuid) {
-        Player player = this.allPlayers.get(uuid);
-        if (player == null) {
-            throw new PlayerNotFoundException(uuid);
-        }
-        return player;
+    public boolean isVictory(Game game) {
+        return missionService.getSucceededMissions(game) == GameplayConfiguration.MISSIONS_FOR_END;
+    }
+
+    public boolean isGameOver(Game game) {
+        int succeeded = missionService.getSucceededMissions(game);
+        return succeeded == GameplayConfiguration.MISSIONS_FOR_END
+                || ((game.getCurrentMission() - succeeded) == GameplayConfiguration.MISSIONS_FOR_END);
     }
 
     public Map<Integer, Game> getOpenGamesList() {
         return this.allGames.entrySet().stream()
-                .filter(entry -> entry.getValue().getCurrentMission() < 1)
+                .filter(entry -> entry.getValue().getCurrentMission() == 0)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public int getRandomValue(int parameter) {
-        return (int) (Math.random() * parameter);
-    }
 }

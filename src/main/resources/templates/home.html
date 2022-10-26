@@ -52,7 +52,6 @@ th {
         </tr>
         <tr>
             <td><input id="input" type="text" th:field="*{name}"/></td>
-<!--            <td th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Input Error</td>-->
             <td th:if="${nameerror}"><i>Имя игрока должно иметь от 2 до 30 символов!</i></td>
         </tr>
     </table>

@@ -12,7 +12,6 @@ public class Player {
 
     private final UUID uuid;
 
-    //    private User user;
     @EqualsAndHashCode.Include
     private String name;
 
@@ -31,10 +30,6 @@ public class Player {
 
     public enum Role {RESISTANCE, SPY}
 
-
-    //    public Player(User user) {
-//        this.user = user;
-//    }
     public Player(String name) {
         this.uuid = UUID.randomUUID();
         this.name = name;
