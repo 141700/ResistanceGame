@@ -1,7 +1,5 @@
 package resistanceGame.service;
 
-import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import resistanceGame.model.Game;
 import resistanceGame.model.Player;
@@ -10,18 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 
 @Component
-@Log4j2
 public class TeamService {
-
-    @Autowired
-    GameService gameService;
 
     public boolean isTeamValid(Game game, List<String> team) {
         return team.size() == getRequestedTeamValue(game);
     }
 
-    public void createTeam(int gameId, List<String> team) {
-        Game game = gameService.getGame(gameId);
+    public void createTeam(Game game, List<String> team) {
         List<Player> table = game.getTable();
         team.stream()
                 .mapToInt(Integer::parseInt)
@@ -32,8 +25,7 @@ public class TeamService {
         return game.getConfiguration().get(game.getCurrentMission());
     }
 
-    public void voteForTeam(Player player, boolean vote) {
-        Game game = gameService.getGame(player.getInGame());
+    public void voteForTeam(Game game, Player player, boolean vote) {
         int currentVote = game.getCurrentVote();
         player.getTeamVote().put(currentVote, vote);
     }
