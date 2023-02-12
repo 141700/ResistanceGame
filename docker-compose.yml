@@ -1,0 +1,15 @@
+version: '3.1'
+
+services:
+
+  resistancegame:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: resistancegame
+    restart: always
+
+networks:
+  default:
+    external:
+      name: webapp_backend
