@@ -1,5 +1,6 @@
 package resistanceGame.service;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import resistanceGame.configuration.GameplayConfiguration;
@@ -14,6 +15,7 @@ import java.util.stream.IntStream;
 
 
 @Component
+@Getter
 @RequiredArgsConstructor
 public class GameService {
 

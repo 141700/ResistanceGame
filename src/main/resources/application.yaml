@@ -52,3 +52,8 @@ gameplay:
       - 5
       - 5
   gameIdRank: 100_000
+
+cleaning:
+    cronInterval: 0 0 */2 * * *
+    notStartedGameLifeHours: 1
+    startedGameLifeHours: 48

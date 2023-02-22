@@ -2,6 +2,7 @@ package resistanceGame.model;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,6 +15,8 @@ public class Game {
     private ArrayList<Player> table;
 
     private Player createdBy;
+
+    private final LocalDateTime created;
 
     private Stage stage;
 
@@ -32,6 +35,7 @@ public class Game {
     public Game(int gameId, Player creator) {
         this.id = gameId;
         this.createdBy = creator;
+        this.created = LocalDateTime.now();
         this.table = new ArrayList<>();
         this.missions = new HashMap<>();
         this.missionResults = new HashMap<>();
